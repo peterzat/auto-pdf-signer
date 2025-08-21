@@ -260,14 +260,9 @@ class AutoPDFSigner:
             print("No company name found in entity data for definition filling.")
             return False
         
-        # Definition terms to look for (simple terms, commonly found in definitions)
-        # Order by length (longest first) to avoid substring conflicts
+        # Definition terms to look for - ONLY "Recipient" to avoid over-filling
         definition_terms = [
-            'Receiving Party',  # Longest first
-            'Representatives', 
-            'Representative',   # Shorter version after longer one
-            'Recipient',
-            'Offeree'
+            'Recipient'  # Only target the Recipient field
         ]
         
         # Track which patterns we've already replaced (once per document)
@@ -330,13 +325,13 @@ class AutoPDFSigner:
                                 # Use the first (closest) underscore pattern found
                                 underscore_rect = underscore_instances[0]
                                 
-                                # Create redaction to remove underscores
-                                page.add_redact_annot(underscore_rect)
-                                page.apply_redactions()
+                                # Insert company name directly over the underscores without redaction
+                                # This avoids any risk of blanking out text above or below
+                                text_x = underscore_rect.x0
+                                text_y = underscore_rect.y1 - 2  # Slightly above the bottom for proper baseline
                                 
-                                # Insert company name
                                 page.insert_text(
-                                    underscore_rect.tl,
+                                    fitz.Point(text_x, text_y),
                                     company_name,
                                     fontsize=10,
                                     color=(0, 0, 0)
@@ -427,18 +422,8 @@ class AutoPDFSigner:
                                         # Clear any underscores in the bracket area first
                                         bracket_fill_area = fitz.Rect(bracket_rect.x1 + 1, bracket_rect.y0 - 5, closing_bracket_rect.x0 - 1, bracket_rect.y1 + 5)
                                         
-                                        # Search for underscores in the bracket area and remove them
-                                        underscores_found = False
-                                        for underscore_pattern in underscore_patterns:
-                                            underscore_instances = page.search_for(underscore_pattern, clip=bracket_fill_area)
-                                            for underscore_rect in underscore_instances:
-                                                page.add_redact_annot(underscore_rect)
-                                                underscores_found = True
-                                        
-                                        # Apply redactions to clear underscores
-                                        if underscores_found:
-                                            page.apply_redactions()
-                                            print(f"Cleared underscores in bracket area for '{term}'")
+                                        # Skip underscore removal to avoid text blanking
+                                        # Just insert text directly without clearing underscores
                                         
                                         # Insert company name in the center of the bracket area
                                         # Adjust x position to center the text better
@@ -477,11 +462,7 @@ class AutoPDFSigner:
                                         print(f"Found underscore pattern '{underscore_pattern}' near '{term}'")
                                         underscore_rect = underscore_instances[0]
                                         
-                                        # Clear the underscores
-                                        page.add_redact_annot(underscore_rect)
-                                        page.apply_redactions()
-                                        
-                                        # Insert company name over the underscore area
+                                        # Insert company name directly over the underscore area without redaction
                                         center_x = (underscore_rect.x0 + underscore_rect.x1) / 2
                                         text_width_estimate = len(company_name) * 5
                                         insert_point = fitz.Point(center_x - text_width_estimate/2, underscore_rect.y1 - 2)
