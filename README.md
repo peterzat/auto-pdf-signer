@@ -35,14 +35,20 @@ A Python script that automatically signs PDF documents by filling form fields or
 ### Input Files Required
 
 1. **input.pdf** - The PDF document to be signed (e.g., NDA, contract)
-2. **entity.txt** - Key-value pairs with entity information:
+2. **entity.txt** - Key-value pairs with entity information (see `entity.txt.sample` for format):
    ```
-   Company=WaltCo Ltd.
-   Address=One Microsoft Way, Redmond, WA 98052, US
-   Name=John Doe
-   Title=CEO
+   Company=Your Company Name
+   Address=Your Company Address
+   Name=Your Name
+   Title=Your Title
    ```
 3. **signature.jpg** - Digital signature image file
+
+### Setup Your Files
+
+1. Copy `entity.txt.sample` to `entity.txt` and update with your information
+2. Add your signature image as `signature.jpg`
+3. Place your PDF to be signed as `input.pdf`
 
 ### Running the Script
 
@@ -74,7 +80,7 @@ When no form fields are found:
 
 ### Main Functions
 
-- `load_entity_data()` - Reads and parses entity.txt file
+- `load_entity_data()` - Reads and parses entity.txt file (format shown in entity.txt.sample)
 - `fill_form_fields()` - Fills AcroForm fields with entity data
 - `place_signature()` - Places signature in designated signature fields
 - `fallback_placement()` - Handles PDFs without form fields
@@ -110,7 +116,7 @@ The script intelligently maps form field names to entity data:
 ## Examples
 
 ### With Form Fields
-If your PDF has form fields named "CompanyName", "Address", etc., they will be automatically filled with matching data from entity.txt.
+If your PDF has form fields named "CompanyName", "Address", etc., they will be automatically filled with matching data from your entity.txt file (use entity.txt.sample as a template).
 
 ### Without Form Fields
 If no form fields exist, the script will:
